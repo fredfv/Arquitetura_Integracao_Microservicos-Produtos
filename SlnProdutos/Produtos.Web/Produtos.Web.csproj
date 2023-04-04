@@ -15,4 +15,9 @@
     <ProjectReference Include="..\GeekBurguer.Products.Contract\GeekBurguer.Products.Contract.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+    <Folder Include="Properties\ServiceDependencies\" />
+  </ItemGroup>
+
 </Project>
