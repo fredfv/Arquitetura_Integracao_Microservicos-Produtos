@@ -1,4 +1,4 @@
-﻿using GeekBurguer.Products.Contract.Dto;
+﻿using GeekBurguer.Products.Service.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Produtos.Web.Controllers
@@ -6,48 +6,22 @@ namespace Produtos.Web.Controllers
 	[Route("api/products")]
 	public class ProductsController : Controller
 	{
-		private IList<ProductDto> Products = new List<ProductDto>();
+		private readonly IProductService _productService;
 
-		public ProductsController()
+        public ProductsController(IProductService productService)
 		{
-			var paulistaStore = "Paulista";
-			var morumbiStore = "Morumbi";
-
-			var beef = new ItemDto { ItemId = Guid.NewGuid(), Name = "beef" };
-			var pork = new ItemDto { ItemId = Guid.NewGuid(), Name = "pork" };
-			var mustard = new ItemDto { ItemId = Guid.NewGuid(), Name = "mustard" };
-			var ketchup = new ItemDto { ItemId = Guid.NewGuid(), Name = "ketchup" };
-			var bread = new ItemDto { ItemId = Guid.NewGuid(), Name = "bread" };
-			var wBread = new ItemDto { ItemId = Guid.NewGuid(), Name = "whole bread" };
-
-			Products = new List<ProductDto>()
-			{
-				new ProductDto { ProductId = Guid.NewGuid(), Name = "Darth Bacon",
-					Image = "hamb1.png", StoreName = paulistaStore,
-					Items = new List<ItemDto> {beef, ketchup, bread }
-				},
-				new ProductDto { ProductId = Guid.NewGuid(), Name = "Cap. Spork",
-					Image = "hamb2.png", StoreName = paulistaStore,
-					Items = new List<ItemDto> { pork, mustard, wBread }
-				},
-				new ProductDto { ProductId = Guid.NewGuid(), Name = "Beef Turner",
-					Image = "hamb3.png", StoreName = morumbiStore,
-					Items = new List<ItemDto> {beef, mustard, bread }
-				}
-			};
-		}
+            _productService = productService;
+        }
 
 		[HttpGet("{storeName}")]
-		public IActionResult GetProductsByStoreName(string storeName)
+		public async Task<IActionResult> GetProductsByStoreName(string storeName)
 		{
-			var productsByStore = Products.Where(product =>
-	                  product.StoreName == storeName).ToList();
+			var productsByStore = await _productService.GetProductsByStoreNameAsync(storeName);
 
 			if (productsByStore.Count <= 0)
 				return NotFound();
 
-			return Ok(productsByStore);
-
+			return Ok(productsByStore);			
 		}
 	}
 }

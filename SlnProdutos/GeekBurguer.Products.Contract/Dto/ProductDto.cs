@@ -1,33 +1,33 @@
-﻿namespace GeekBurguer.Products.Contract.Dto
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace GeekBurguer.Products.Contract.Dto
 {
-	public class ProductDto
-	{
-		public string StoreName { get; set; }
-		public Guid ProductId { get; set; }
-		public string Name { get; set; }
-		public string Image { get; set; }
-		public List<ItemDto> Items { get; set; }
-		public decimal Price { get; set; }
+    public class Product
+    {
+        [ForeignKey("StoreId")]
+        public Store Store { get; set; }
+        public Guid StoreId { get; set; }
+        [Key]
+        public Guid ProductId { get; set; }
+        public string Name { get; set; }
+        public string Image { get; set; }
+        public ICollection<Item> Items { get; set; }
+            = new List<Item>();
+    }
 
-	}
-
-	public class ItemDto
-	{
-		public Guid ItemId { get; set; }
-		public string Name { get; set; }
-	}
-
-	public class ProductChangedDto
-	{
-		public ProductState State { get; set; }
-		public ProductDto Product { get; set; }
-	}
-
-	public enum ProductState
-	{
-		Deleted = 2,
-		Modified = 3,
-		Added = 4
-	}
-
+    public class Store
+    {
+        [Key]
+        public Guid StoreId { get; set; }
+        public string Name { get; set; }
+    }
+    public class Item
+    {
+        [Key]
+        public Guid ItemId { get; set; }
+        public string Name { get; set; }
+        [ForeignKey("ProductId")]
+        public Product Product { get; set; }
+    }
 }

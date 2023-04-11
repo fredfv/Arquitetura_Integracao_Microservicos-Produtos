@@ -1,3 +1,4 @@
+using GeekBurguer.Products.IoC;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,11 +12,13 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.ConfigureServices();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-	app.UseSwagger();
+app.UseSwagger();
 	app.UseSwaggerUI();
 
 

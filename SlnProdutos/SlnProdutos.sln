@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Produtos.Web", "Produtos.Web\Produtos.Web.csproj", "{C76A500C-4D56-4E91-BDC4-64EC415B6F04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Produtos.Web", "Produtos.Web\Produtos.Web.csproj", "{C76A500C-4D56-4E91-BDC4-64EC415B6F04}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurguer.Products.Contract", "GeekBurguer.Products.Contract\GeekBurguer.Products.Contract.csproj", "{D275DD9C-9C7C-4132-B880-4D91C1A1D101}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.Contract", "GeekBurguer.Products.Contract\GeekBurguer.Products.Contract.csproj", "{D275DD9C-9C7C-4132-B880-4D91C1A1D101}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.Infra", "GeekBurguer.Products.Infra\GeekBurguer.Products.Infra.csproj", "{80F6C6C8-796F-4321-9FE0-6BD56F87AB69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.IoC", "GeekBurguer.Products.IoC\GeekBurguer.Products.IoC.csproj", "{E7F69509-73CD-49A7-A015-16D783B41B3F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurguer.Products.Service", "GeekBurguer.Products.Service\GeekBurguer.Products.Service.csproj", "{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{D275DD9C-9C7C-4132-B880-4D91C1A1D101}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D275DD9C-9C7C-4132-B880-4D91C1A1D101}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D275DD9C-9C7C-4132-B880-4D91C1A1D101}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80F6C6C8-796F-4321-9FE0-6BD56F87AB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80F6C6C8-796F-4321-9FE0-6BD56F87AB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80F6C6C8-796F-4321-9FE0-6BD56F87AB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80F6C6C8-796F-4321-9FE0-6BD56F87AB69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7F69509-73CD-49A7-A015-16D783B41B3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7F69509-73CD-49A7-A015-16D783B41B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7F69509-73CD-49A7-A015-16D783B41B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7F69509-73CD-49A7-A015-16D783B41B3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

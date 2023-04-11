@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GeekBurguer.Products.Contract\GeekBurguer.Products.Contract.csproj" />
+    <ProjectReference Include="..\GeekBurguer.Products.IoC\GeekBurguer.Products.IoC.csproj" />
   </ItemGroup>
 
   <ItemGroup>
