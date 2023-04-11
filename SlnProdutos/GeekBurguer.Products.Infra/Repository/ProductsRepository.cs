@@ -1,10 +1,11 @@
 ﻿using GeekBurguer.Products.Contract.Dto;
 using GeekBurguer.Products.Infra.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace GeekBurguer.Products.Infra.Repository
 {
-    public class ProductsRepository : BaseRepository, IProductsRepository
+    public class ProductsRepository : BaseRepository<Product>, IProductsRepository
     {
         private ProductsDbContext _context;
 
@@ -18,6 +19,13 @@ namespace GeekBurguer.Products.Infra.Repository
             product.ProductId = Guid.NewGuid();
             await _context.Products.AddAsync(product);
             return true;
+        }
+
+        public async Task<Product> GetProductByFilters(Expression<Func<Product, bool>> filters)
+        {
+            var resultFilters = GetByFilters(true, filters);
+            var product = await resultFilters.FirstOrDefaultAsync();
+            return product;
         }
 
         public async Task<List<Item>> GetFullListOfItemsAsync()

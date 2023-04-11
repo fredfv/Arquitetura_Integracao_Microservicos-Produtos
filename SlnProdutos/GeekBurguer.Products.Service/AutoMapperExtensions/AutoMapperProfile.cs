@@ -12,10 +12,10 @@ namespace GeekBurguer.Products.Service.AutoMapperExtensions
             CreateMap<Product, ProductToGetDto>();
             CreateMap<Item, ItemToGetDto>();
 
-            //CreateMap<ProductToUpSert, Product>()
-            // .AfterMap<MatchStoreFromRepository>();
-            //CreateMap<ItemToUpSert, Item>()
-            //    .AfterMap<MatchItemsFromRepository>();
+            CreateMap<ProductToUpSert, Product>()
+             .AfterMap<MatchStoreFromRepository>();
+            CreateMap<ItemToUpSert, Item>()
+                .AfterMap<MatchItemsFromRepository>();
 
         }
     }

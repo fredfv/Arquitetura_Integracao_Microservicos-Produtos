@@ -1,4 +1,5 @@
-﻿using GeekBurguer.Products.Service.Services.Interfaces;
+﻿using GeekBurguer.Products.Service.Dto;
+using GeekBurguer.Products.Service.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Produtos.Web.Controllers
@@ -23,5 +24,36 @@ namespace Produtos.Web.Controllers
 
 			return Ok(productsByStore);			
 		}
-	}
+
+        [HttpPost()]
+        public IActionResult AddProduct([FromBody] ProductToUpSert productToAdd)
+        {
+            if (productToAdd == null)
+                return BadRequest();
+
+            var product = _mapper.Map<Product>(productToAdd);
+
+            if (product.StoreId == Guid.Empty)
+                return new
+                    Helper.UnprocessableEntityResult(ModelState);
+
+            _productsRepository.Add(product);
+            _productsRepository.Save();
+            var productToGet = _mapper.Map<ProductToGet>(product);
+
+            return CreatedAtRoute("GetProduct",
+                new { id = productToGet.ProductId },
+                productToGet);
+        }
+
+        [HttpGet("{id}", Name = "GetProduct")]
+        public IActionResult GetProduct(Guid id)
+        {
+            var product = _productsRepository.GetProductById(id);
+            var productToGet = _mapper.Map<ProductToGet>(product);
+
+            return Ok(productToGet);
+        }
+
+    }
 }
