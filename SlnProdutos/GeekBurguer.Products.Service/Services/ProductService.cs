@@ -20,7 +20,10 @@ namespace GeekBurguer.Products.Service.Services
         public async Task<bool> Add(ProductToUpSert productToUpSert)
         {
             var product = _mapper.Map<Product>(productToUpSert);
-            return await _productsRepository.AddProductAsync(product);
+            bool inserted =  await _productsRepository.AddProductAsync(product);
+            await _productsRepository.SaveAsync();
+
+            return inserted;
         }
 
         public async Task<ProductToGetDto> GetProductById(Guid id)

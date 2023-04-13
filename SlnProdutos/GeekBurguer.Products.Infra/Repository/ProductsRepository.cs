@@ -46,9 +46,9 @@ namespace GeekBurguer.Products.Infra.Repository
             return products;
         }
 
-        public async Task<Product> GetStoreByName(string storeName)
+        public async Task<Store> GetStoreByName(string storeName)
         {
-            return await _context.Products?.FirstOrDefaultAsync(f => f.Store.Name == storeName);
+            return await _context.Stores?.FirstOrDefaultAsync(f => f.Name == storeName);
         }
     }
 

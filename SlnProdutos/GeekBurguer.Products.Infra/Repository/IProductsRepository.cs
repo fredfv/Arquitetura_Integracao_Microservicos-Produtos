@@ -8,7 +8,7 @@ namespace GeekBurguer.Products.Infra.Repository
         Task<List<Product>> GetProductsByStoreNameAsync(string storeName);
         Task<bool> AddProductAsync(Product product);
         Task<List<Item>> GetFullListOfItemsAsync();
-        Task<Product> GetStoreByName(string storeName);
+        Task<Store> GetStoreByName(string storeName);
         Task<Product> GetProductByFilters(Expression<Func<Product, bool>> filters);
     }
 

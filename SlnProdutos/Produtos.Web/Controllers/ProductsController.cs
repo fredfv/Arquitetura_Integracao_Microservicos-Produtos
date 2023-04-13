@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Produtos.Web.Controllers
 {
-	[Route("api/products")]
+	[Route("api/[controller]")]
 	public class ProductsController : Controller
 	{
 		private readonly IProductService _productService;
@@ -14,7 +14,7 @@ namespace Produtos.Web.Controllers
             _productService = productService;
         }
 
-		[HttpGet("{storeName}")]
+		[HttpGet("store/{{storeName}}")]
 		public async Task<IActionResult> GetProductsByStoreName(string storeName)
 		{
 			var productsByStore = await _productService.GetProductsByStoreNameAsync(storeName);
@@ -26,31 +26,36 @@ namespace Produtos.Web.Controllers
 		}
 
         [HttpPost()]
-        public IActionResult AddProduct([FromBody] ProductToUpSert productToAdd)
+        public async Task<IActionResult> AddProduct([FromBody] ProductToUpSert productToAdd)
         {
-            if (productToAdd == null)
-                return BadRequest();
+            try
+            {
+                if (productToAdd == null)
+                    return BadRequest();
 
-            var product = _mapper.Map<Product>(productToAdd);
+                bool inserted = await _productService.Add(productToAdd);
 
-            if (product.StoreId == Guid.Empty)
-                return new
-                    Helper.UnprocessableEntityResult(ModelState);
+                if (!inserted)
+                    return new UnprocessableEntityResult();
 
-            _productsRepository.Add(product);
-            _productsRepository.Save();
-            var productToGet = _mapper.Map<ProductToGet>(product);
+                var productToGet = await _productService.GetProductsByStoreNameAsync(productToAdd.StoreName);
 
-            return CreatedAtRoute("GetProduct",
-                new { id = productToGet.ProductId },
-                productToGet);
+                return CreatedAtRoute("GetProduct",
+                    new { id = productToGet.First().ProductId },
+                    productToGet);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
 
-        [HttpGet("{id}", Name = "GetProduct")]
-        public IActionResult GetProduct(Guid id)
+        [HttpGet("product/{{id}}", Name = "GetProduct")]
+        public async Task<IActionResult> GetProductAsync(Guid id)
         {
-            var product = _productsRepository.GetProductById(id);
-            var productToGet = _mapper.Map<ProductToGet>(product);
+            var productToGet = await _productService.GetProductById(id);
 
             return Ok(productToGet);
         }
