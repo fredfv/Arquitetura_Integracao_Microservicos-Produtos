@@ -9,7 +9,7 @@ namespace GeekBurguer.Products.Service.Services
     public class ProductService: IProductService
     {
         private readonly IProductsRepository _productsRepository;
-        private IMapper _mapper;
+        private IMapper _mapper;        
 
         public ProductService(IProductsRepository productsRepository, IMapper mapper)
         {
