@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
 using GeekBurguer.Products.Contract.Dto;
+using GeekBurguer.Products.Infra.Repository;
 using GeekBurguer.Products.Service.Configuration;
-using GeekBurguer.Products.Service.Dto;
 using GeekBurguer.Products.Service.Services.Interfaces;
-using Microsoft.Azure.ServiceBus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -15,124 +16,177 @@ namespace GeekBurguer.Products.Service.Services
 {
     public class ProductChangedService : IProductChangedService
     {
-        private List<Message> _messages;
+        private const string Topic = "ProductChangedTopic";
         private readonly IConfiguration _configuration;
-        private readonly ServiceBusConfiguration _serviceBusConfiguration;
+        private IMapper _mapper;
+        private readonly List<ServiceBusMessage> _messages;
+        private Task _lastTask;
+        //private readonly IServiceBusNamespace _namespace;
+        private readonly ILogService _logService;
+        private CancellationTokenSource _cancelMessages;
+        private IServiceProvider _serviceProvider { get; }
 
-        public ProductChangedService(IConfiguration configuration, IOptions<ServiceBusConfiguration> serviceBusConfiguration)
+        public ProductChangedService(IMapper mapper,
+            IConfiguration configuration, ILogService logService, IServiceProvider serviceProvider)
         {
-            _messages = new List<Message>();
+            _mapper = mapper;
             _configuration = configuration;
-            _serviceBusConfiguration = serviceBusConfiguration.Value;
+            _logService = logService;
+            _messages = new List<ServiceBusMessage>();
+
+            _cancelMessages = new CancellationTokenSource();
+            _serviceProvider = serviceProvider;
+            EnsureTopicIsCreated();
         }
 
-        public void AddToMessageList(IEnumerable<EntityEntry<Product>> changes)
+        public async Task EnsureTopicIsCreated()
         {
-            _messages.Clear();
-
-            _messages.AddRange(changes
-                     .Where(entity =>
-                       entity.State != EntityState.Detached
-                       && entity.State != EntityState.Unchanged)
-                     .Select(entity => GetMessage(entity)));
-
+            var config = _configuration.GetSection("serviceBus").Get<ServiceBusConfiguration>();
+            var adminClient = new ServiceBusAdministrationClient(config.ConnectionString);
+            if (!await adminClient.TopicExistsAsync(Topic))
+                await adminClient.CreateTopicAsync(Topic);
         }
 
-        private Message GetMessage(EntityEntry<Product> entity)
+        public List<ServiceBusMessage> AddToMessageList(IEnumerable<EntityEntry<Product>> changes)
         {
-            var productChanged =
-                Mapper.Map<ProductToGetDto>(entity);
+            var messages = (IEnumerable<ServiceBusMessage>)changes
+                .Where(entity => entity.State != EntityState.Detached
+                                 && entity.State != EntityState.Unchanged)
+                .Select(GetMessage)
+                .ToList();
 
-            var productChangedSerialized =
-                JsonConvert.SerializeObject(productChanged);
+            return messages.ToList();
+        }
 
-            var productChangedByteArray =
-               Encoding.UTF8.GetBytes(productChangedSerialized);
-
-            return new Message
+        private void AddOrUpdateEvent(ProductChangedEvent productChangedEvent)
+        {
+            try
             {
-                Body = productChangedByteArray,
-                MessageId = Guid.NewGuid().ToString(),
-                Label = productChanged.StoreId.ToString()
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var scopedProcessingService =
+                        scope.ServiceProvider
+                            .GetRequiredService<IProductChangedEventRepository>();
+
+                    ProductChangedEvent evt;
+                    if (productChangedEvent.EventId == Guid.Empty
+                        || (evt = scopedProcessingService.Get(productChangedEvent.EventId)) == null)
+                        scopedProcessingService.Add(productChangedEvent);
+                    else
+                    {
+                        evt.MessageSent = true;
+                        scopedProcessingService.Update(evt);
+                    }
+
+                    scopedProcessingService.Save();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        public ServiceBusMessage GetMessage(EntityEntry<Product> entity)
+        {
+            var productChanged = _mapper.Map<ProductChangedMessage>(entity);
+            var productChangedSerialized = JsonConvert.SerializeObject(productChanged);
+            var productChangedBinaryData = new BinaryData(Encoding.UTF8.GetBytes(productChangedSerialized));
+
+            var productChangedEvent = _mapper.Map<ProductChangedEvent>(entity);
+            AddOrUpdateEvent(productChangedEvent);
+
+            return new ServiceBusMessage()
+            {
+                Body = productChangedBinaryData,
+                MessageId = productChangedEvent.EventId.ToString(),
+                Subject = productChanged.Product.StoreId.ToString(),
+
             };
         }
 
-        public async Task SendMessageAsync()
+        public async void SendMessagesAsync(List<ServiceBusMessage> messages)
         {
-            var connectionString = _configuration
-             ["serviceBus:ConnectionString"];
-            var queueClient = new QueueClient
-                (connectionString, "ProductChanged");
+            if (_lastTask != null && !_lastTask.IsCompleted)
+                return;
 
-            int tries = 0;
-            Message message;
-            while (true)
+            var config = _configuration.GetSection("serviceBus").Get<ServiceBusConfiguration>();
+            var client = new ServiceBusClient(config.ConnectionString);
+
+            _logService.SendMessagesAsync("Product was changed");
+            _messages.AddRange(messages);
+
+            var topicSender = client.CreateSender(Topic);
+            _lastTask = SendAsync(topicSender, _cancelMessages.Token);
+
+            await _lastTask;
+
+            var closeTask = topicSender.CloseAsync();
+            await closeTask;
+            HandleException(closeTask);
+        }
+
+        public async Task SendAsync(ServiceBusSender topicSender,
+            CancellationToken cancellationToken)
+        {
+            var tries = 0;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                if ((_messages.Count <= 0) || (tries > 10))
+                if (_messages.Count <= 0)
                     break;
 
+                ServiceBusMessage message;
                 lock (_messages)
                 {
                     message = _messages.FirstOrDefault();
                 }
 
-                await queueClient.SendAsync(message);
-                _messages.Remove(message);
+                await topicSender.SendMessageAsync(message, cancellationToken);
+
+                //var sendTask = topicSender.SendMessageAsync(message, cancellationToken);
+                //await sendTask;
+                //var success = HandleException(sendTask);
+
+                //if (!success)
+                //{
+                //    var cancelled = cancellationToken.WaitHandle.WaitOne(10000 * (tries < 60 ? tries++ : tries));
+                //    if (cancelled) break;
+                //}
+                //else
+                //{
+                //    if (message == null) continue;
+                //    AddOrUpdateEvent(new ProductChangedEvent() { EventId = new Guid(message.MessageId) });
+                //    _messages.Remove(message);
+                //}
             }
-
-            await queueClient.CloseAsync();
-
-
         }
 
-        private async void ReceiveMessages()
+        public bool HandleException(Task task)
         {
-            if (_serviceBusConfiguration != null)
+            if (task.Exception == null || task.Exception.InnerExceptions.Count == 0) return true;
+
+            task.Exception.InnerExceptions.ToList().ForEach(innerException =>
             {
-                string TopicName = "";
-                string SubscriptionName = "";
+                Console.WriteLine($"Error in SendAsync task: {innerException.Message}. Details:{innerException.StackTrace} ");
 
-                var subscriptionClient = new SubscriptionClient(_serviceBusConfiguration.ConnectionString,
-                                                                TopicName,
-                                                                SubscriptionName);
+                if (innerException is ServiceBusException)
+                    Console.WriteLine("Connection Problem with Host. Internet Connection can be down");
+            });
 
-                //by default a 1=1 rule is added when subscription is created, so we need to remove it
-                await subscriptionClient.RemoveRuleAsync("$Default");
-
-                await subscriptionClient.AddRuleAsync(new RuleDescription
-                {
-                    Filter = new CorrelationFilter { Label = "filter-store" },
-                    Name = "filter-store"
-                });
-
-                var mo = new MessageHandlerOptions(ExceptionHandler) { AutoComplete = true };
-
-                subscriptionClient.RegisterMessageHandler(MessageHandler, mo);
-
-                Console.ReadLine();
-            }
-
+            return false;
         }
 
-        private static Task MessageHandler(Message message, CancellationToken arg2)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine($"message Label: {message.Label}");
-            Console.WriteLine($"CorrelationId: {message.CorrelationId}");
-            var prodChangesString = Encoding.UTF8.GetString(message.Body);
-
-            Console.WriteLine("Message Received");
-            Console.WriteLine(prodChangesString);
-
-            //Thread.Sleep(40000);
+            EnsureTopicIsCreated();
 
             return Task.CompletedTask;
         }
 
-        private static Task ExceptionHandler(ExceptionReceivedEventArgs arg)
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            Console.WriteLine($"Handler exception {arg.Exception}.");
-            var context = arg.ExceptionReceivedContext;
-            Console.WriteLine($"Endpoint: {context.Endpoint},Path: {context.EntityPath}, Action: {context.Action} ");
+            _cancelMessages.Cancel();
+
             return Task.CompletedTask;
         }
     }

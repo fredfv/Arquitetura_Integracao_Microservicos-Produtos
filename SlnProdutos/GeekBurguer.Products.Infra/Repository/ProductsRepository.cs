@@ -7,7 +7,7 @@ namespace GeekBurguer.Products.Infra.Repository
 {
     public class ProductsRepository : BaseRepository<Product>, IProductsRepository
     {
-        private ProductsDbContext _context;
+        public ProductsDbContext _context;
 
         public ProductsRepository(ProductsDbContext context):base(context)
         {
@@ -49,6 +49,11 @@ namespace GeekBurguer.Products.Infra.Repository
         public async Task<Store> GetStoreByName(string storeName)
         {
             return await _context.Stores?.FirstOrDefaultAsync(f => f.Name == storeName);
+        }
+
+        public ProductsDbContext GetContext()
+        {
+            return _context;
         }
     }
 

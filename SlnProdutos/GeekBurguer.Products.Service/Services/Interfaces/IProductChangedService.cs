@@ -1,12 +1,14 @@
-﻿using GeekBurguer.Products.Contract.Dto;
+﻿using Azure.Messaging.ServiceBus;
+using GeekBurguer.Products.Contract.Dto;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Hosting;
 
 namespace GeekBurguer.Products.Service.Services.Interfaces
 {
-    public interface IProductChangedService
+    public interface IProductChangedService: IHostedService
     {
-        void AddToMessageList(IEnumerable<EntityEntry<Product>> changes);
-        Task SendMessageAsync();
+        List<ServiceBusMessage> AddToMessageList(IEnumerable<EntityEntry<Product>> changes);
+        void SendMessagesAsync(List<ServiceBusMessage> messages);
 
     }
 }

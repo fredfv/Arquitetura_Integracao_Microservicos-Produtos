@@ -23,6 +23,8 @@ namespace GeekBurguer.Products.IoC
             services.AddScoped<IProductsRepository, ProductsRepository>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IProductChangedService, ProductChangedService>();
+            services.AddScoped<ILogService, LogService>();
+            services.AddScoped<IProductChangedEventRepository, ProductChangedEventRepository>();
 
             var serviceProvider = services.BuildServiceProvider();
             var scope = serviceProvider.CreateScope();
@@ -34,14 +36,14 @@ namespace GeekBurguer.Products.IoC
             var productContext = scope.ServiceProvider.GetRequiredService<ProductsDbContext>();
             productContext.Seed();
 
-            services.AddSingleton<IServiceBusNamespace>(provider =>
-            {
-                var configuration = provider.GetService<IConfiguration>();
-                var serviceBusNamespace = configuration.GetServiceBusNamespace();
-                serviceBusNamespace.SetupTopic(configuration);
+            //services.AddSingleton<IServiceBusNamespace>(provider =>
+            //{
+            //    var configuration = provider.GetService<IConfiguration>();
+            //    var serviceBusNamespace = configuration.GetServiceBusNamespace();
+            //    serviceBusNamespace.SetupTopic(configuration);
 
-                return serviceBusNamespace;
-            });
+            //    return serviceBusNamespace;
+            //});
          
             return services;
         }

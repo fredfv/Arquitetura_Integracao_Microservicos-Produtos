@@ -9,19 +9,27 @@ namespace GeekBurguer.Products.Service.Services
     public class ProductService: IProductService
     {
         private readonly IProductsRepository _productsRepository;
+        private IProductChangedService _productChangedService;
         private IMapper _mapper;        
 
-        public ProductService(IProductsRepository productsRepository, IMapper mapper)
+        public ProductService(IProductsRepository productsRepository,
+                              IMapper mapper,
+                              IProductChangedService productChangedService)
         {
             _productsRepository = productsRepository;
             _mapper = mapper;
+            _productChangedService = productChangedService;
         }
 
         public async Task<bool> Add(ProductToUpSert productToUpSert)
         {
             var product = _mapper.Map<Product>(productToUpSert);
             bool inserted =  await _productsRepository.AddProductAsync(product);
+            var messages = _productChangedService.AddToMessageList(_productsRepository.GetContext().ChangeTracker.Entries<Product>());
+
             await _productsRepository.SaveAsync();
+    
+            _productChangedService.SendMessagesAsync(messages);
 
             return inserted;
         }
