@@ -140,24 +140,22 @@ namespace GeekBurguer.Products.Service.Services
                 {
                     message = _messages.FirstOrDefault();
                 }
+                
+                var sendTask = topicSender.SendMessageAsync(message, cancellationToken);
+                Task.WhenAll(sendTask);
+                var success = HandleException(sendTask);
 
-                await topicSender.SendMessageAsync(message, cancellationToken);
-
-                //var sendTask = topicSender.SendMessageAsync(message, cancellationToken);
-                //await sendTask;
-                //var success = HandleException(sendTask);
-
-                //if (!success)
-                //{
-                //    var cancelled = cancellationToken.WaitHandle.WaitOne(10000 * (tries < 60 ? tries++ : tries));
-                //    if (cancelled) break;
-                //}
-                //else
-                //{
-                //    if (message == null) continue;
-                //    AddOrUpdateEvent(new ProductChangedEvent() { EventId = new Guid(message.MessageId) });
-                //    _messages.Remove(message);
-                //}
+                if (!success)
+                {
+                    var cancelled = cancellationToken.WaitHandle.WaitOne(10000 * (tries < 60 ? tries++ : tries));
+                    if (cancelled) break;
+                }
+                else
+                {
+                    if (message == null) continue;
+                    AddOrUpdateEvent(new ProductChangedEvent() { EventId = new Guid(message.MessageId) });
+                    _messages.Remove(message);
+                }
             }
         }
 
