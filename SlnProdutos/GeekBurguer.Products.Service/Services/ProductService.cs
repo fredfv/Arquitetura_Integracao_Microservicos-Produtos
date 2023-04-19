@@ -50,5 +50,36 @@ namespace GeekBurguer.Products.Service.Services
 
             return productsToGet;
         }
+
+        public async Task Update(Guid Id, ProductToUpSert productToUpSert)
+        {
+            var product = await _productsRepository.GetProductByFilters(f=> f.ProductId == Id);
+             product.Store.Name    = productToUpSert.Name;
+
+            var allItemsDB = product.Items.Select(s => s).ToList();
+
+            foreach (var item in allItemsDB)
+            {
+                product.Items.Remove(item);
+                _productsRepository.RemoveItem(item);
+            }
+
+            var newItems = _mapper.Map<List<Item>>(productToUpSert.Items);
+
+            foreach (var item in newItems)
+            {
+                item.Product = product;
+                product.Items.Add(item);
+                _productsRepository.AddItem(item);
+            }
+
+            _productsRepository.UpdateProduct(product);
+
+            var messages = _productChangedService.AddToMessageList(_productsRepository.GetContext().ChangeTracker.Entries<Product>());
+
+            await _productsRepository.SaveAsync();
+
+            _productChangedService.SendMessagesAsync(messages);
+        }
     }
 }

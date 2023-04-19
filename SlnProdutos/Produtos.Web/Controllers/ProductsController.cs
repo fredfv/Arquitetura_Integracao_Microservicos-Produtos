@@ -1,6 +1,11 @@
-﻿using GeekBurguer.Products.Service.Dto;
+﻿using AutoMapper;
+using GeekBurguer.Products.Contract.Dto;
+using GeekBurguer.Products.Service.Dto;
 using GeekBurguer.Products.Service.Services.Interfaces;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Amqp.Framing;
+using System.ComponentModel.DataAnnotations;
 
 namespace Produtos.Web.Controllers
 {
@@ -8,10 +13,11 @@ namespace Produtos.Web.Controllers
 	public class ProductsController : Controller
 	{
 		private readonly IProductService _productService;
-
-        public ProductsController(IProductService productService)
+        private readonly IMapper _mapper;
+        public ProductsController(IProductService productService, IMapper mapper)
 		{
             _productService = productService;
+            _mapper = mapper;
         }
 
 		[HttpGet("store/{{storeName}}")]
@@ -60,5 +66,26 @@ namespace Produtos.Web.Controllers
             return Ok(productToGet);
         }
 
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> PartiallyUpdateProduct(Guid id, [Required] [FromBody] ProductToUpSert productToUpdate)
+        {            
+            var product = await _productService.GetProductById(id);
+
+            if (id == null || product == null)
+            {
+                return NotFound("Produto não encontrado para atualização");
+            }
+                       
+            if (product.StoreId == Guid.Empty)
+                return NotFound("SoreId não encontrado");
+
+            await _productService.Update(id, productToUpdate);
+
+            var productUpdated = await _productService.GetProductById(id);
+
+            return CreatedAtRoute("GetProduct",
+                new { id = productUpdated.ProductId },
+                productUpdated);
+        }
     }
 }

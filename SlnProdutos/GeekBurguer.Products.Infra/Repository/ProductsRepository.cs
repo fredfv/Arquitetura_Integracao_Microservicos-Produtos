@@ -23,7 +23,10 @@ namespace GeekBurguer.Products.Infra.Repository
 
         public async Task<Product> GetProductByFilters(Expression<Func<Product, bool>> filters)
         {
-            var resultFilters = GetByFilters(true, filters);
+            var resultFilters = GetByFilters(true, filters)
+                               .Include(i => i.Items)
+                               .Include(i => i.Store);
+
             var product = await resultFilters.FirstOrDefaultAsync();
             return product;
         }
@@ -55,6 +58,20 @@ namespace GeekBurguer.Products.Infra.Repository
         {
             return _context;
         }
-    }
 
+        public void UpdateProduct(Product product)
+        {
+             _context.Products.Update(product);             
+        }
+
+        public void RemoveItem(Item item)
+        {
+            _context.Items.Remove(item);
+        }
+
+        public void AddItem(Item item)
+        {
+            _context.Items.Add(item);
+        }
+    }
 }
