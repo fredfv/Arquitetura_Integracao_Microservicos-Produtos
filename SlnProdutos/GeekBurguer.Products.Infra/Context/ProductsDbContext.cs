@@ -16,5 +16,7 @@ namespace GeekBurguer.Products.Infra.Context
 
         public DbSet<Item> Items { get; set; }
 
+        public DbSet<ProductChangedEvent> ProductChangedEvents { get; set; }
+
     }
 }

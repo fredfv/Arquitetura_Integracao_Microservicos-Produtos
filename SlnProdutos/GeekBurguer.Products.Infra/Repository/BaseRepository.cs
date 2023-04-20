@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GeekBurguer.Products.Infra.Context;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace GeekBurguer.Products.Infra.Repository
@@ -33,7 +34,7 @@ namespace GeekBurguer.Products.Infra.Repository
                 result = result.Where(predicate);
                 return result;
             }
-        }
+        }        
 
         public void Dispose()
         {

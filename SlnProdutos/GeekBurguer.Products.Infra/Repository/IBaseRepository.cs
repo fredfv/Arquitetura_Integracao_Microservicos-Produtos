@@ -9,6 +9,6 @@ namespace GeekBurguer.Products.Infra.Repository
                                     Expression<Func<T, bool>> predicate = null,
                                     Func<IQueryable<T>, 
                                     IQueryable<T>> func = null);
-        
+
     }
 }
