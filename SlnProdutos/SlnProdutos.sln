@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.Infra"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.IoC", "GeekBurguer.Products.IoC\GeekBurguer.Products.IoC.csproj", "{E7F69509-73CD-49A7-A015-16D783B41B3F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurguer.Products.Service", "GeekBurguer.Products.Service\GeekBurguer.Products.Service.csproj", "{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeekBurguer.Products.Service", "GeekBurguer.Products.Service\GeekBurguer.Products.Service.csproj", "{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeekBurguer.Products.UnitTests", "GeekBurguer.Products.UnitTests\GeekBurguer.Products.UnitTests.csproj", "{2EFEC037-5164-41D2-BF42-1F67F3F76620}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA5448BA-90B3-4446-ABE0-EA9FE2A69F03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EFEC037-5164-41D2-BF42-1F67F3F76620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EFEC037-5164-41D2-BF42-1F67F3F76620}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EFEC037-5164-41D2-BF42-1F67F3F76620}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EFEC037-5164-41D2-BF42-1F67F3F76620}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
