@@ -26,6 +26,8 @@ jobs:
       run: |
         cd SlnProdutos
         dotnet build --no-restore
+    - name: Test
+      run: dotnet test SlnProdutos/GeekBurguer.Products.UnitTests/GeekBurguer.Products.UnitTests.csproj
     - name: Publish
       run: |
         cd SlnProdutos
