@@ -19,7 +19,9 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore SlnProdutos/SlnProdutos.sln
+       run: |
+         cd SlnProdutos
+         dotnet publish --no-restore -o ./out /p:Version=2.0.${{ github.run_number }}
     - name: Build
       run: dotnet publish --no-restore -o ./out /p:Version=2.0.${{ github.run_number }}
     - name: Pack
