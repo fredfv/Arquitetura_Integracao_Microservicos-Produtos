@@ -34,7 +34,7 @@ jobs:
       run: |
         cd SlnProdutos
         dotnet pack --no-restore -o ./nupkgs /p:Version=2.0.${{ github.run_number }}  
-    - name: Push nuget
-      run: |
-        cd SlnProdutos
-        dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY}} -s https://fiap22net.azurewebsites.net/nuget
+    # - name: Push nuget
+      # run: |
+        # cd SlnProdutos
+        # dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY}} -s https://fiap22net.azurewebsites.net/nuget
