@@ -64,7 +64,7 @@ namespace GeekBurguer.Products.UnitTests.Controllers
             var response = await _productsController.GetProductsByStoreName(storeName);
 
             //assert            
-            Assert.IsType<OkObjectResult>(storeName);
+            Assert.IsType<OkObjectResult>(response);
             response.Should().BeOfType<OkObjectResult>();
 
         }
