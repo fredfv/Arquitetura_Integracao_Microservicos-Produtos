@@ -54,7 +54,7 @@ namespace GeekBurguer.Products.UnitTests.Controllers
                     Name = "Paulista",
                     Price = 20,
                     ProductId = Guid.NewGuid(),
-                    //StoreId = Guid.NewGuid()
+                    StoreId = Guid.NewGuid()
                 }
             };
 
