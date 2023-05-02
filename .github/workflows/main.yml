@@ -1,0 +1,42 @@
+name: .NET
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: |
+        cd SlnProdutos
+        dotnet restore
+    - name: Build
+      run: |
+        cd SlnProdutos
+        dotnet build --no-restore
+    - name: Test
+      run: dotnet test SlnProdutos/GeekBurguer.Products.UnitTests/GeekBurguer.Products.UnitTests.csproj
+    - name: Publish
+      run: |
+        cd SlnProdutos
+        dotnet publish --no-restore -o ./out /p:Version=2.0.${{ github.run_number }}
+    - name: Pack
+      run: |
+        cd SlnProdutos
+        dotnet pack --no-restore -o ./nupkgs /p:Version=2.0.${{ github.run_number }}  
+    # - name: Push nuget
+      # run: |
+        # cd SlnProdutos
+        # dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY}} -s https://fiap22net.azurewebsites.net/nuget
